@@ -2,7 +2,7 @@ var settings = {
 	"warmup": 5*60,
 	"cooldown": 5*60,
 	"run": 3*60,
-	"walk": 1.5*60,
+	"walk": 2*60,
 	"sets": 12
 }
 
@@ -10,6 +10,8 @@ var runTime = settings["run"] * settings["sets"];
 var walkTime = settings["walk"] * (settings["sets"] - 1)
 var totalTime = settings["warmup"] + settings["cooldown"] + runTime + walkTime;
 var seconds = [];
+var secondsData = [];
+var secondsDataObj = [];
 var sets = [];
 var circle;
 
@@ -33,16 +35,25 @@ var runNumber = 1;
 var walkNumber = 1;
 var setRunTime = 1;
 for (i=0; i<settings["warmup"]; i++) {
-	seconds[second] = "Warmup";
-	sets[second] = settings["warmup"] + 1 - setRunTime;
+	// TODO: Switch to using a timeData multi-dimensional array
+	seconds[second] = {
+		"name": "Warmup",
+		"timeLeft": settings["warmup"] + 1 - setRunTime,
+		"set": 0,
+		"percent": (setRunTime / settings["warmup"] * 100)
+	};
 	second++;
 	setRunTime++;
 }
 for (set = 1; set <= settings["sets"]; set++) {
 	setRunTime = 1;
 	for (i = 1; i <= settings["run"]; i++) {
-		seconds[second] = "Run " + runNumber + " of " + settings["sets"];
-		sets[second] = settings["run"] + 1 - setRunTime;
+		seconds[second] = {
+			"name": "Run " + runNumber + " of " + settings["sets"],
+			"timeLeft": settings["run"] + 1 - setRunTime,
+			"set": runNumber,
+			"percent": setRunTime / settings["run"] * 100
+		};
 		second++;
 		setRunTime++;
 	}
@@ -50,8 +61,12 @@ for (set = 1; set <= settings["sets"]; set++) {
 	if (set < settings["sets"]) {
 		setRunTime = 1;
 		for (i = 0; i < settings["walk"]; i++) {
-			seconds[second] = "Walk " + walkNumber + " of " + settings["sets"];
-			sets[second] = settings["walk"] + 1 - setRunTime;
+			seconds[second] = {
+				"name": "Walk " + walkNumber + " of " + settings["sets"],
+				"timeLeft": settings["walk"] + 1 - setRunTime,
+				"set": runNumber,
+				"percent": setRunTime / settings["walk"] * 100
+			};
 			second++;
 			setRunTime++;
 		}
@@ -61,8 +76,12 @@ for (set = 1; set <= settings["sets"]; set++) {
 }
 setRunTime = 1;
 for (i = 0; i < settings["cooldown"]; i++) {
-	seconds[second] = "Cooldown";
-	sets[second] = settings["walk"] + 1 - setRunTime;
+	seconds[second] = {
+		"name": "Cooldown",
+		"timeLeft": settings["cooldown"] + 1 - setRunTime,
+		"set": 0,
+		"percent": setRunTime / settings["cooldown"] * 100
+	};
 	second++;
 	setRunTime++;
 }
@@ -81,19 +100,19 @@ var runTimer = setInterval( () => {
 	displayStatus.innerHTML = whatRoundIsIt(runningTime);
 	elapsedStatus = document.getElementById("elapsed");
 	elapsedStatus.innerHTML = secondsToTime(totalTime - runningTime);
-	//leftStatus = document.getElementById("left");
-	//leftStatus.innerHTML = secondsToTime(sets[runningTime]);
 	percentStatus = document.getElementById("percent");
-	var percent = 100 - (sets[runningTime] / settings["run"] * 100)
-	percentStatus.innerHTML = secondsToTime(sets[runningTime]); // percent.toFixed(0) + "%";
+	// TODO: Divide by how much time is in this set
+	var percent = seconds[runningTime]["percent"];
+	percentStatus.innerHTML = secondsToTime(seconds[runningTime]["timeLeft"]);
 	percentCircle = document.getElementById("percentCircle");
 	percentCircle.className = "c100 p" + percent.toFixed(0);
+	console.log(percent.toFixed(0));
 
 }, 1000);
 
 function whatRoundIsIt(elapsedTime) {
 	if (elapsedTime < totalTime) {
-		return seconds[elapsedTime];
+		return seconds[elapsedTime]["name"];
 	} else {
 		return 'Done';
 	}
