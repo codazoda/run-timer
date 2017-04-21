@@ -3,7 +3,13 @@ var settings = {
 	"cooldown": 5*60,
 	"run": 3*60,
 	"walk": 2*60,
-	"sets": 12
+	"sets": 12,
+	"color": {
+		"warmup": "blue",
+		"run": "red",
+		"walk": "orange",
+		"cooldown": "blue"
+	}
 }
 
 var runTime = settings["run"] * settings["sets"];
@@ -37,7 +43,7 @@ var setRunTime = 1;
 for (i=0; i<settings["warmup"]; i++) {
 	// TODO: Switch to using a timeData multi-dimensional array
 	seconds[second] = {
-		"name": "Warmup",
+		"name": "warmup",
 		"timeLeft": settings["warmup"] + 1 - setRunTime,
 		"set": 0,
 		"percent": (setRunTime / settings["warmup"] * 100)
@@ -49,7 +55,7 @@ for (set = 1; set <= settings["sets"]; set++) {
 	setRunTime = 1;
 	for (i = 1; i <= settings["run"]; i++) {
 		seconds[second] = {
-			"name": "Run " + runNumber + " of " + settings["sets"],
+			"name": "run",
 			"timeLeft": settings["run"] + 1 - setRunTime,
 			"set": runNumber,
 			"percent": setRunTime / settings["run"] * 100
@@ -62,7 +68,7 @@ for (set = 1; set <= settings["sets"]; set++) {
 		setRunTime = 1;
 		for (i = 0; i < settings["walk"]; i++) {
 			seconds[second] = {
-				"name": "Walk " + walkNumber + " of " + settings["sets"],
+				"name": "walk ",
 				"timeLeft": settings["walk"] + 1 - setRunTime,
 				"set": runNumber,
 				"percent": setRunTime / settings["walk"] * 100
@@ -77,7 +83,7 @@ for (set = 1; set <= settings["sets"]; set++) {
 setRunTime = 1;
 for (i = 0; i < settings["cooldown"]; i++) {
 	seconds[second] = {
-		"name": "Cooldown",
+		"name": "cooldown",
 		"timeLeft": settings["cooldown"] + 1 - setRunTime,
 		"set": 0,
 		"percent": setRunTime / settings["cooldown"] * 100
@@ -92,12 +98,13 @@ console.log(sets);
 var runTimer = setInterval( () => {
 	var currentTime = Date.now() / 1000;
 	var runningTime = Math.round(currentTime - startTime) - 1;
+	var name = seconds[runningTime]["name"];
 	if (runningTime > totalTime - 1) {
 		clearInterval(runTimer);
 	}
 	// Show it
 	displayStatus = document.getElementById("status");
-	displayStatus.innerHTML = whatRoundIsIt(runningTime);
+	displayStatus.innerHTML = whatRoundIsIt(runningTime).toUpperCase();
 	elapsedStatus = document.getElementById("elapsed");
 	elapsedStatus.innerHTML = secondsToTime(totalTime - runningTime);
 	percentStatus = document.getElementById("percent");
@@ -105,8 +112,7 @@ var runTimer = setInterval( () => {
 	var percent = seconds[runningTime]["percent"];
 	percentStatus.innerHTML = secondsToTime(seconds[runningTime]["timeLeft"]);
 	percentCircle = document.getElementById("percentCircle");
-	percentCircle.className = "c100 p" + percent.toFixed(0);
-	console.log(percent.toFixed(0));
+	percentCircle.className = "c100 p" + percent.toFixed(0) + " " + settings["color"][name];
 
 }, 1000);
 
